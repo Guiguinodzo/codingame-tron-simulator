@@ -15,10 +15,6 @@ from enum import Enum
 HEIGHT = 20
 WIDTH = 30
 
-log_directory = f'logs/run_{time.strftime("%Y%m%d-%H%M%S")}'
-os.makedirs(log_directory, exist_ok=True)
-LOGGER = Logger(f'{log_directory}/simulator.log')
-
 class SimulationState(Enum):
     INITIALIZED = 0
     RUNNING = 1
@@ -29,9 +25,16 @@ class Simulation:
 
     _state: SimulationState = SimulationState.INITIALIZED
 
-    def __init__(self, config: Config, logger = LOGGER):
+    def __init__(self, config: Config, logger = None):
         self._config = config
-        self._logger = logger
+        log_directory = f'logs/run_{time.strftime("%Y%m%d-%H%M%S")}'
+        os.makedirs(log_directory, exist_ok=True)
+
+        if logger:
+            self._logger = logger
+        else:
+            self._logger = Logger(f'{log_directory}/simulator.log')
+
         self._logger.log(f"Config: {config}")
 
         self.ais: list[AI] = []
@@ -101,6 +104,10 @@ def main():
     simulation: Simulation|None = None
     exit_code = 0
 
+    log_directory = f'logs/run_{time.strftime("%Y%m%d-%H%M%S")}'
+    os.makedirs(log_directory, exist_ok=True)
+    logger = Logger(f'{log_directory}/simulator.log')
+
     try:
         args = sys.argv[1:]
 
@@ -114,21 +121,21 @@ def main():
                 json_config = json.load(config_file)
                 config = Config(json_config)
 
-        LOGGER.log(f"Config: {config}")
+        logger.log(f"Config: {config}")
 
-        simulation = Simulation(config, LOGGER)
-        simulation.start(progress_function(LOGGER))
+        simulation = Simulation(config, logger)
+        simulation.start(progress_function(logger))
 
         input("Press any key to print all states...")
         simulation.print_all_states()
 
     except Exception:
-        LOGGER.log(traceback.format_exc())
+        logger.log(traceback.format_exc())
         exit_code=1
     finally:
         if simulation:
             simulation.stop()
-        LOGGER.close()
+        logger.close()
         sys.exit(exit_code)
 
 

@@ -93,11 +93,13 @@ class Game:
     _nb_players: int
     _initial_coords: list[tuple[int, int]]
     _states: list[GameState]
+    _player_death_state_index: list[int]
 
     def __init__(self, initial_coords: list[tuple[int, int]], logger: Logger):
         self.logger = logger
         self._nb_players = len(initial_coords)
         self._initial_coords = initial_coords
+        self._player_death_state_index = [-1] * self._nb_players
 
         grid = Grid(WIDTH, HEIGHT)
         heads = [(0, 0)] * self._nb_players
@@ -120,11 +122,16 @@ class Game:
     def get_last_state(self):
         return self._states[-1]
 
-    def move_player(self, player, move: str) -> GameState:
-        last_state = self._states[-1]
-        next_state = last_state.move_player(player, move)
-        self._states.append(next_state)
-        return next_state
+    def get_player_death_state_index(self, player):
+        return self._player_death_state_index[player]
 
     def get_player_initial_coords(self, player):
         return self._initial_coords[player] if not self._states[-1].is_dead(player) else (-1, -1)
+
+    def move_player(self, player, move: str) -> GameState:
+        last_state = self._states[-1]
+        next_state = last_state.move_player(player, move)
+        if not last_state.is_dead(player) and next_state.is_dead(player):
+            self._player_death_state_index[player] = len(self._states)
+        self._states.append(next_state)
+        return next_state

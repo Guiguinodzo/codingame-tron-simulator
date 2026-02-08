@@ -67,9 +67,4 @@ class Simulator(SimulatorInterface):
         if player_simulator_id is None:
             return -1
 
-        states = self.simulation.game.get_states()
-        index = len(states) - 1
-        while index >= 0 and not states[index].is_dead(player_simulator_id):
-            index -= 1
-
-        return index
+        return self.simulation.game.get_player_death_state_index(player_simulator_id)
