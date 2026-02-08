@@ -44,7 +44,7 @@ class Simulator(SimulatorInterface):
         output_board = OutputBoard()
         for player_ui_id, player_id in self.ui_to_simulator_player_mapping.items():
             head = state_at_step.get_head(player_id)
-            trail = state_at_step.get_player_path(player_id)
+            trail = state_at_step.get_trail(player_id)
             output_board.players.append(OutputPlayer(player_ui_id, head, trail))
 
         return output_board

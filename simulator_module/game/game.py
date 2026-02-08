@@ -16,9 +16,11 @@ MOVES = {
 
 class GameState:
 
-    def __init__(self, grid: Grid, heads: list[tuple[int, int]], current_player: int|None = None, turn: int = 0, previous: Self = None):
+    def __init__(self, grid: Grid, heads: list[tuple[int, int]], trails: list[list[tuple[int, int]]],
+                 current_player: int | None = None, turn: int = 0, previous: Self = None):
         self._grid = grid
         self._heads = heads
+        self._trails = trails
         self._current_player = current_player
         self._turn = turn
         self._previous = previous
@@ -28,6 +30,9 @@ class GameState:
 
     def get_heads(self):
         return self._heads
+
+    def get_trail(self, player):
+        return self._trails[player]
 
     def get_current_player(self):
         return self._current_player
@@ -48,30 +53,25 @@ class GameState:
         alive_players = [p for p, (x, y) in enumerate(self._heads) if (x, y) != (-1, -1)]
         return alive_players[0] if len(alive_players) == 1 else -1
 
-    def get_player_path(self, player) -> list[tuple[int,int]]:
-        player_head = self._heads[player]
-        if player_head == (-1, -1):
-            return []
-        elif self._previous is None:
-            return [player_head]
-        else:
-            return self._previous.get_player_path(player) + [player_head]
-
     def move_player(self, player, move: str) -> Self:
         (x, y) = self._heads[player]
         (dx, dy) = MOVES[move]
 
         next_grid = deepcopy(self._grid)
         next_heads = self._heads[:]
+        next_trails = [trail[:] for trail in self._trails]
 
         if self._grid.is_valid(x + dx, y + dy) and self._grid.get(x + dx, y + dy) == -1:
             next_grid.set(x + dx, y + dy, player)
-            next_heads[player] = (x + dx, y + dy)
+            next_player_position = (x + dx, y + dy)
+            next_heads[player] = next_player_position
+            next_trails[player] += [next_player_position]
         else:
             next_heads[player] = (-1, -1)
             next_grid.replace(player, -1)
+            next_trails[player] = []
 
-        return GameState(next_grid, next_heads, player, self._turn + 1, self)
+        return GameState(next_grid, next_heads, next_trails, player, self._turn + 1, self)
 
     def print(self, logger: Logger):
         header = "_| " + " ".join([str(i % 10) for i in range(self._grid.width)])
@@ -90,7 +90,6 @@ class GameState:
 
 
 class Game:
-
     _nb_players: int
     _initial_coords: list[tuple[int, int]]
     _states: list[GameState]
@@ -102,10 +101,12 @@ class Game:
 
         grid = Grid(WIDTH, HEIGHT)
         heads = [(0, 0)] * self._nb_players
+        trails = [[(0, 0)]] * self._nb_players
         for (p, (x, y)) in enumerate(self._initial_coords):
             grid.set(x, y, p)
             heads[p] = (x, y)
-        self._states = [GameState(grid, heads)]
+            trails[p] = [(x,y)]
+        self._states = [GameState(grid, heads, trails)]
 
     def get_nb_players(self):
         return self._nb_players
