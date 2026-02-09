@@ -15,7 +15,7 @@ class AI:
     _initial_coords: tuple[int, int]
     _player_id: int
     _running: bool
-    _logs = []
+    _logs :list[str] = []
 
     def __init__(self, player_id, path: str, initial_coords: tuple[int, int], log_directory: str, logger: Logger):
         self._player_id = player_id
@@ -61,6 +61,7 @@ class AI:
         moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         index = self._stdout.expect(moves, timeout=None)
         self._read_logs()
+        self._write_logs(len(self._logs)-1)
         return moves[index]
 
     def stop(self):
@@ -86,6 +87,11 @@ class AI:
                 break
 
         self._logs.append(buffer.decode('utf-8'))
+
+    def _write_logs(self, turn):
+        logs = self._logs[turn]
+        self._log_file.write(f"=== Logs at turn {turn} ===\n".encode('utf-8'))
+        self._log_file.write(logs.encode('utf-8'))
 
     def get_logs_at_turn(self, turn: int) -> str | None:
         if not 0 <= turn < len(self._logs):
