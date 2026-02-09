@@ -53,7 +53,8 @@ class Simulator(SimulatorInterface):
         return f"Not implemented yet: get_player_stdout_at({step}, {player_id})"
 
     def get_player_stderr_at(self, step: int, player_id: int) -> str:
-        return f"Not implemented yet: get_player_stderr_at({step}, {player_id})"
+        player_simulator_id = self.ui_to_simulator_player_mapping.get(player_id)
+        return self.simulation.get_logs_at(step, player_simulator_id)
 
     def get_winner(self) -> int:    # return winner's player_id
         winner_id = self.simulation.game.get_winner()

@@ -42,7 +42,7 @@ class Simulation:
             self._logger.log(ai_config.program_path)
             self.ais.append(AI(player, ai_config.program_path, ai_config.initial_coords, log_directory, self._logger))
 
-        self.game = Game([ai.initial_coords for ai in self.ais], self._logger)
+        self.game = Game([ai._initial_coords for ai in self.ais], self._logger)
 
     def get_state(self) -> SimulationState:
         return self._state
@@ -93,6 +93,16 @@ class Simulation:
         for state in self.game.get_states():
             self._logger.log(f"Turn: {state.get_turn()}  - Player: #{state.get_current_player()}")
             state.print(self._logger)
+
+    def get_logs_at(self, step, player_id):
+        player_of_turn, turn = self.game.get_player_and_turn_at_step(step)
+        if player_of_turn != player_id:
+            self._logger.log(f"Cannot get logs at step {step} for player {player_id} : its player {player_of_turn}'s turn")
+            return None
+
+        return self.ais[player_id].get_logs_at_turn(turn)
+
+
 
 
 def progress_function(logger) -> Callable[[int, int, str],None]:
