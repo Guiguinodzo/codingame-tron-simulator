@@ -8,7 +8,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QL
 from dataclasses import dataclass
 
 from ui_module.utils.qt.collapsable_widget import CollapsableWidget
-from ui_module.utils.qt.qt_utils import set_tron_button_style, put_in_frame, set_tron_spinbox_style
+from ui_module.utils.qt.qt_utils import set_tron_button_style, put_in_frame, set_tron_spinbox_style, \
+    set_tron_checkbox_style
 from ui_module.utils.world import World
 
 @dataclass
@@ -91,6 +92,15 @@ class PlayersSettingsWidget(QWidget):
 
         self.layout.addLayout(self.top_part_layout)
 
+        self.keep_logs_layout = QHBoxLayout()
+        self.keep_logs_checkbox = QCheckBox("Save logs on disk")
+        self.keep_logs_layout.addStretch()
+        set_tron_checkbox_style(self.keep_logs_checkbox)
+        self.keep_logs_layout.addWidget(self.keep_logs_checkbox)
+        self.keep_logs_layout.addStretch()
+
+        self.layout.addLayout(self.keep_logs_layout)
+
         self.start_layout = QHBoxLayout()
         self.start_button = QPushButton(" Run Simulation ")
         self.start_layout.addStretch()
@@ -104,6 +114,7 @@ class PlayersSettingsWidget(QWidget):
 
         self.setLayout(self.layout)
         self._load_database()
+        self.keep_logs_checkbox.clicked.connect(self._keep_logs_checked)
         self.start_button.clicked.connect(self._start_simulation)
 
     def create_player_widget(self, index: int, default_color: QColor) -> PlayerUI:
@@ -300,6 +311,7 @@ class PlayersSettingsWidget(QWidget):
                 if len(path) > 40:
                     path = "..." + self.world.player_settings.get_ai_path(i)[-37:]
                 self.players[i].path.setText(path)
+        self.keep_logs_checkbox.setChecked(self.world.ui_settings.get_keep_logs())
         self._enable_widgets()
 
     def open_close(self):
@@ -378,3 +390,6 @@ class PlayersSettingsWidget(QWidget):
 
     def _start_simulation(self):
         self.start_simulation.emit()
+
+    def _keep_logs_checked(self):
+        self.world.ui_settings.set_keep_logs(self.keep_logs_checkbox.isChecked())

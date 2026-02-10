@@ -23,6 +23,7 @@ class UISettings:
         self._json_last_path = ""
         self._ai_last_path = ""
         self._board_game_speed = 1
+        self._keep_logs = False
 
         self._load()
 
@@ -30,6 +31,7 @@ class UISettings:
         self._json_last_path = self.settings.value("ui/json_last_path", "", type=str)
         self._ai_last_path = self.settings.value("ui/ai_last_path", "", type=str)
         self._board_game_speed = self.settings.value("ui/board_game_speed", "", type=int)
+        self._keep_logs = self.settings.value("ui/keep_logs", "", type=bool)
 
     def get_json_last_path(self):
         if len(self._json_last_path) > 0 and os.path.exists(self._json_last_path):
@@ -59,6 +61,14 @@ class UISettings:
     def set_board_game_speed(self, speed):
         self._board_game_speed = speed
         self.settings.setValue("ui/board_game_speed", speed)
+        self.settings.sync()
+
+    def get_keep_logs(self):
+        return self._keep_logs
+
+    def set_keep_logs(self, keep: bool):
+        self._keep_logs = keep
+        self.settings.setValue("ui/keep_logs", keep)
         self.settings.sync()
 
 

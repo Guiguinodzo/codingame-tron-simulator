@@ -48,6 +48,8 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
         self._thread = None
         self._worker = None
 
+        self.keep_log_files = False
+
     @abstractmethod
     def _start_simulation(self, players: list[InputPlayer]):
         pass
@@ -76,7 +78,9 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
     def get_player_death_step(self, player_id: int) -> int:
         pass
 
-    def start_simulation(self, players: list[InputPlayer]):
+    def start_simulation(self, players: list[InputPlayer], keep_logs):
+        self.keep_log_files = keep_logs
+
         self._thread = QThread(self)
         self._worker = self.SimulationWorker(self, players)
 

@@ -83,3 +83,12 @@ def set_tron_spinbox_style(spinbox):
             background: transparent;
         }
         """)
+
+def set_tron_checkbox_style(checkbox):
+    checkbox.setStyleSheet("""
+        QCheckBox {
+            color: #7df9ff;
+            spacing: 10px;
+            font-size: 15px;
+        }
+    """)

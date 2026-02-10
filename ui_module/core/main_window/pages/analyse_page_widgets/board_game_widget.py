@@ -410,7 +410,7 @@ class BoardGameWidget(QWidget):
                         starting_pos = None if self.world.player_settings.get_random_pos(i) else self.world.player_settings.get_position(i)
                     )
                 )
-        self.world.simulator.start_simulation(input_players)
+        self.world.simulator.start_simulation(input_players, self.world.ui_settings.get_keep_logs())
 
     def simulator_progress(self, percent):
         self.game_widget.set_progress(percent)
