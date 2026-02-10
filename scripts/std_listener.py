@@ -15,12 +15,16 @@ stdout_logs = [[] for _ in commands]
 stderr_logs = [[] for _ in commands]
 event_queues = []
 
+threads = []
+
+stop_event = threading.Event()
 
 def stream_reader(pipe, event_queue, process_index, stream_type):
-    for line in iter(pipe.readline, ""):
-        clean_line = line.rstrip()
-        event_queue.put((process_index, stream_type, clean_line))
-    pipe.close()
+    while not stop_event.is_set():
+        line = pipe.readline()
+        if not line:
+            break
+        event_queue.put((process_index, stream_type, line.rstrip()))
 
 
 for index, command in enumerate(commands):
@@ -37,17 +41,21 @@ for index, command in enumerate(commands):
     event_queues.append(event_queue)
     process_list.append(process)
 
-    threading.Thread(
+    t = threading.Thread(
         target=stream_reader,
         args=(process.stdout, event_queue, index, "stdout"),
         daemon=True
-    ).start()
+    )
+    t.start()
+    threads.append(t)
 
-    threading.Thread(
+    t = threading.Thread(
         target=stream_reader,
         args=(process.stderr, event_queue, index, "stderr"),
         daemon=True
-    ).start()
+    )
+    t.start()
+    threads.append(t)
 
 
 # --- boucle principale ---
@@ -77,6 +85,9 @@ while running:
 
     time.sleep(0.01)
 
+stop_event.set()
+for t in threads:
+    t.join()
 
 print("\n=== STDOUT LOGS ===")
 print(stdout_logs)
