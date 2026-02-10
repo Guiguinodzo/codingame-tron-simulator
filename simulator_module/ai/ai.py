@@ -60,8 +60,8 @@ class AI:
 
         moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         index = self._stdout.expect(moves, timeout=None)
-        self._read_logs()
-        self._write_logs(len(self._logs)-1)
+        #self._read_logs()
+        #self._write_logs(len(self._logs)-1)
         return moves[index]
 
     def stop(self):

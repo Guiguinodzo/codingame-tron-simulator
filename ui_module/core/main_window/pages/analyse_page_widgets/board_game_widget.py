@@ -12,6 +12,9 @@ class GameWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.cell_w = 0
+        self.cell_h = 0
+
         self.grid_w = 30
         self.grid_h = 20
 
@@ -73,11 +76,20 @@ class GameWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
+        offset_x = 0
+        offset_y = 0
         w = self.width()
         h = self.height()
 
-        cell_w = w / self.grid_w
-        cell_h = h / self.grid_h
+        if h > int(2 * w / 3):
+            offset_y = (h - int(2 * w / 3)) / 2
+            h = int(2 * w / 3)
+        elif w > int(3 * h / 2):
+            offset_x = (w - int(3 * h / 2)) / 2
+            w = int(3 * h / 2)
+
+        self.cell_w = w / self.grid_w
+        self.cell_h = h / self.grid_h
 
         # ---- background ----
         painter.fillRect(self.rect(), QColor(0, 0, 0, 220))
@@ -87,10 +99,10 @@ class GameWidget(QWidget):
         painter.setPen(grid_pen)
 
         for x in range(self.grid_w + 1):
-            painter.drawLine(int(x * cell_w), 0, int(x * cell_w), h)
+            painter.drawLine(int(x * self.cell_w) + offset_x, 0 + offset_y, int(x * self.cell_w) + offset_x, h + offset_y)
 
         for y in range(self.grid_h + 1):
-            painter.drawLine(0, int(y * cell_h), w, int(y * cell_h))
+            painter.drawLine(0 + offset_x, int(y * self.cell_h) + offset_y, w + offset_x, int(y * self.cell_h) + offset_y)
 
         # ---- players ----
         for player_index, path in enumerate(self.players_paths):
@@ -102,19 +114,55 @@ class GameWidget(QWidget):
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(color))
 
-            for x, y in path:
-                rect = QRectF(
-                    x * cell_w,
-                    y * cell_h,
-                    cell_w,
-                    cell_h
-                )
-                painter.drawRect(rect)
+
+            for i, (x, y) in enumerate(path):
+                prev_pos = path[i - 1] if i > 0 else None
+                next_pos = path[i + 1] if i < len(path) - 1 else None
+                self.draw_tron_cell(painter, x, y, offset_x, offset_y, prev_pos, next_pos)
 
         if self.loading:
             self.draw_loading_overlay(painter)
 
         painter.end()
+
+
+    def draw_tron_cell(self, painter, x, y, offset_x, offset_y, prev_pos, next_pos):
+
+        base_x = x * self.cell_w + offset_x
+        base_y = y * self.cell_h + offset_y
+
+        sub_w = self.cell_w / 3
+        sub_h = self.cell_h / 3
+
+        def draw(ix, iy):
+            painter.drawRect(QRectF(
+                base_x + ix * sub_w - 1,
+                base_y + iy * sub_h - 1,
+                sub_w + 2,
+                sub_h + 2
+            ))
+
+        cx, cy = x, y
+        dirs = set()
+
+        if prev_pos:
+            px, py = prev_pos
+            dirs.add((cx - px, cy - py))
+
+        if next_pos:
+            nx, ny = next_pos
+            dirs.add((cx - nx, cy - ny))
+
+        draw(1, 1)
+        for dx, dy in dirs:
+            if dx == 1:  # left
+                draw(0, 1)
+            elif dx == -1:  # right
+                draw(2, 1)
+            elif dy == 1:  # top
+                draw(1, 0)
+            elif dy == -1:  # bottom
+                draw(1, 2)
 
     def draw_loading_overlay(self, painter: QPainter):
         w = self.width()
@@ -178,7 +226,7 @@ class GameWidget(QWidget):
         # Définit la hauteur = 2/3 largeur
         height = int(2 * width / 3)
         # Applique la hauteur
-        self.setFixedHeight(height)
+        #self.setFixedHeight(height)
         super().resizeEvent(event)
 
 

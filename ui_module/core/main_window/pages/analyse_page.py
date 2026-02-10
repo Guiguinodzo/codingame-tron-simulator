@@ -1,5 +1,6 @@
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QFont, Qt
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSplitter
 
 from ui_module.core.main_window.pages.analyse_page_widgets.board_game_widget import BoardGameWidget
 from ui_module.core.main_window.pages.analyse_page_widgets.players_settings_widget import PlayersSettingsWidget
@@ -38,10 +39,7 @@ class AnalysePage(QWidget):
         font.setBold(True)
         label_2.setFont(font)
 
-        left_widget = QWidget()
-        left_layout = QVBoxLayout()
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(20)
+        left_widget = QSplitter(Qt.Vertical)
 
         self.board_game_widget = BoardGameWidget()
 
@@ -51,16 +49,31 @@ class AnalysePage(QWidget):
         bottom_layout.addWidget(put_in_frame(label_2))
         bottom_widget.setLayout(bottom_layout)
 
-        left_layout.addWidget(put_in_frame(self.board_game_widget))
-        left_layout.addWidget(bottom_widget)
+        left_widget.addWidget(put_in_frame(self.board_game_widget))
+        left_widget.addWidget(bottom_widget)
 
-        left_layout.setStretch(0, 0)
-        left_layout.setStretch(1, 1)
+        left_widget.setChildrenCollapsible(False)
+
+        left_widget.setStyleSheet("""
+            QSplitter::handle {
+                background: rgba(0,0,0,0);
+            }
+
+            QSplitter::handle:hover {
+                background: rgba(0,0,0,0);
+            }
+
+            QSplitter::handle:vertical {
+                height: 20px;
+            }
+        """)
 
         right_widget = QWidget()
         right_layout = QVBoxLayout()
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(20)
+
+        QTimer.singleShot(0, lambda: left_widget.setSizes([1, 200]))
 
         self.players_settings_widget = PlayersSettingsWidget()
 
@@ -68,7 +81,6 @@ class AnalysePage(QWidget):
 
         self.players_settings_widget.start_simulation.connect(self.board_game_widget.simulator_started)
 
-        left_widget.setLayout(left_layout)
         right_widget.setLayout(right_layout)
 
         h_layout.addWidget(left_widget)
