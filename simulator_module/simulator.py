@@ -98,12 +98,8 @@ class Simulation:
     def get_logs_at(self, step, player_id):
         player_of_turn, turn = self.game.get_player_and_turn_at_step(step)
         if player_of_turn != player_id:
-            self._logger.log(f"Cannot get logs at step {step} for player {player_id} : its player {player_of_turn}'s turn")
             return None
-
         return self.ais[player_id].get_logs_at_turn(turn)
-
-
 
 
 def progress_function(logger) -> Callable[[int, int, str],None]:

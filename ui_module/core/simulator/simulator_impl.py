@@ -1,6 +1,6 @@
-from ui_module.core.simulator.simulator_interface import SimulatorInterface, OutputBoard, OutputPlayer, InputPlayer
 from simulator_module.config import Config
 from simulator_module.simulator import Simulation
+from ui_module.core.simulator.simulator_interface import SimulatorInterface, OutputBoard, OutputPlayer, InputPlayer
 
 
 class Simulator(SimulatorInterface):

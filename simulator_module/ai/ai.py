@@ -38,7 +38,7 @@ class AI:
     _initial_coords: tuple[int, int]
     _player_id: int
     _running: bool
-    _logs :list[list[str]] = []
+    _logs: list[list[str]]
 
     def __init__(self, player_id, path: str, initial_coords: tuple[int, int], log_directory: str, logger: Logger):
         self._player_id = player_id
@@ -51,8 +51,9 @@ class AI:
         self._process = Popen(['python', path], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
         self._stdout = fdpexpect.fdspawn(self._process.stdout)
         self._stdin = fdpexpect.fdspawn(self._process.stdin)
-        self.log_appender = LogAppender(self._process.stderr, self._logger)
-        self.log_appender.start()
+        self._logs = []
+        self._log_appender = LogAppender(self._process.stderr, self._logger)
+        self._log_appender.start()
 
         self._running = True
 
@@ -96,7 +97,7 @@ class AI:
         return f"{self._player_id}_{self._path.split('/')[-1].split('.')[0]}"
 
     def _read_logs(self):
-        self._logs.append(self.log_appender.retrieve_logs())
+        self._logs.append(self._log_appender.retrieve_logs())
 
     def _write_logs(self, turn):
         logs = self._logs[turn]
