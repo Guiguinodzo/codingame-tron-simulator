@@ -25,24 +25,31 @@ class Simulation:
 
     _state: SimulationState = SimulationState.INITIALIZED
 
-    def __init__(self, config: Config, logger = None):
+    def __init__(self, config: Config, keep_log_files, logger = None):
         self._config = config
-        log_directory = f'logs/run_{time.strftime("%Y%m%d-%H%M%S")}'
-        os.makedirs(log_directory, exist_ok=True)
+        log_directory = None
+        if keep_log_files:
+            log_directory = f'logs/run_{time.strftime("%Y%m%d-%H%M%S")}'
+            os.makedirs(log_directory, exist_ok=True)
 
         if logger:
             self._logger = logger
-        else:
+        elif keep_log_files:
             self._logger = Logger(f'{log_directory}/simulator.log')
+        else:
+            self._logger = Logger()
+            self._logger.log(f"Logs won't be kept.")
 
         self._logger.log(f"Config: {config}")
 
         self.ais: list[AI] = []
+        heads = []
         for (player, ai_config) in enumerate(config.ais):
             self._logger.log(ai_config.program_path)
             self.ais.append(AI(player, ai_config.program_path, ai_config.initial_coords, log_directory, self._logger))
+            heads.append(ai_config.initial_coords)
 
-        self.game = Game([ai._initial_coords for ai in self.ais], self._logger)
+        self.game = Game(heads, self._logger)
 
     def get_state(self) -> SimulationState:
         return self._state
@@ -74,7 +81,7 @@ class Simulation:
                     self.ais[player].write_player_info(p, x0, y0, x1, y1)
 
                 player_move = self.ais[player].read_move()
-                self.game.move_player(player, player_move).print(self._logger)
+                self.game.move_player(player, player_move)
 
                 turn += 1
                 if progress_callback:
