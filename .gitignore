@@ -208,3 +208,7 @@ __marimo__/
 
 # JetBrains Intellij IDEA
 .idea
+
+# Simulator configs
+configs
+logs
