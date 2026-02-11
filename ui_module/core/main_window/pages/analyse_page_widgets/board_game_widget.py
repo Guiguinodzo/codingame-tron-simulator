@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QSize, QTimer, QRectF
+from PySide6.QtCore import Qt, QSize, QTimer, QRectF, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QLinearGradient
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSlider, QHBoxLayout, QPushButton, QLabel, QSpinBox
 
@@ -231,6 +231,8 @@ class GameWidget(QWidget):
 
 
 class BoardGameWidget(QWidget):
+    state_changed = Signal(int)
+
     def __init__(self):
         super().__init__()
 
@@ -429,6 +431,7 @@ class BoardGameWidget(QWidget):
                 if not found:
                     positions.append([])
             self.game_widget.set_state(positions)
+            self.state_changed.emit(self.current_step)
 
     def _enable_widgets(self):
         self.speed_spin.setEnabled(self.game_computed)

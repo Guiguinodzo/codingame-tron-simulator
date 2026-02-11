@@ -51,7 +51,10 @@ class LogsWidget(QWidget):
                 length = len(block)
                 self.step_positions[(player_id, step)] = (start, length)
 
-        print(self.world.simulator.get_player_stderr_at(3, 0))
+        for i in range(4):
+            if self.step_positions.keys().__contains__((i, 1)):
+                print(f"i = {i}")
+                print(self.step_positions[i, 1])
 
     # -----------------------------------------------------
 
@@ -62,11 +65,13 @@ class LogsWidget(QWidget):
         clear_format = QTextCharFormat()
         clear_format.setBackground(Qt.transparent)
 
+        first_tab_to_show = None
+
         for player_id, edit in enumerate(self.text_edits):
             cursor = edit.textCursor()
 
             # clear previous highlights
-            cursor.select(QTextCursor.Document)
+            cursor.select(QTextCursor.SelectionType.Document)
             cursor.setCharFormat(clear_format)
 
             key = (player_id, step)
@@ -76,7 +81,7 @@ class LogsWidget(QWidget):
             start, length = self.step_positions[key]
 
             cursor.setPosition(start)
-            cursor.setPosition(start + length, QTextCursor.KeepAnchor)
+            cursor.setPosition(start + length, QTextCursor.MoveMode.KeepAnchor)
             cursor.setCharFormat(highlight_format)
 
             # scroll to position
@@ -84,3 +89,9 @@ class LogsWidget(QWidget):
             view_cursor.setPosition(start)
             edit.setTextCursor(view_cursor)
             edit.ensureCursorVisible()
+
+            if first_tab_to_show is None:
+                first_tab_to_show = player_id
+
+        if first_tab_to_show is not None:
+            self.tabs.setCurrentIndex(first_tab_to_show)

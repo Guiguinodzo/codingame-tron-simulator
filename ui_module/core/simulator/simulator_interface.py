@@ -87,7 +87,6 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
         self._worker.moveToThread(self._thread)
 
         self._thread.started.connect(self._worker.run)
-        self._worker.finished.connect(self.finished)
         self._worker.finished.connect(self._thread.quit)
 
         self._worker.advancement.connect(self.advancement)

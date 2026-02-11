@@ -38,6 +38,8 @@ class AnalysePage(QWidget):
 
         self.logs_widget = LogsWidget()
 
+        self.board_game_widget.state_changed.connect(self.logs_widget.highlight_step)
+
         World().simulator.finished.connect(self.logs_widget.fill_texts)
 
         bottom_widget = QWidget()
