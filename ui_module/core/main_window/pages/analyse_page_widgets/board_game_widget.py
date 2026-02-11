@@ -470,3 +470,4 @@ class BoardGameWidget(QWidget):
             self.game_widget.stop_loading()
             self._enable_widgets()
             self.set_value(0)
+            self.start_play()
