@@ -52,7 +52,7 @@ class Simulator(SimulatorInterface):
     def get_player_stdout_at(self, step: int, player_id: int) -> str:
         return f"Not implemented yet: get_player_stdout_at({step}, {player_id})"
 
-    def get_player_stderr_at(self, step: int, player_id: int) -> str:
+    def get_player_stderr_at(self, step: int, player_id: int) -> list[str]:
         player_simulator_id = self.ui_to_simulator_player_mapping.get(player_id)
         return self.simulation.get_logs_at(step, player_simulator_id)
 

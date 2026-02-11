@@ -67,7 +67,7 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
         pass
 
     @abstractmethod
-    def get_player_stderr_at(self, step: int, player_id: int) -> str:
+    def get_player_stderr_at(self, step: int, player_id: int) -> list[str]:
         pass
 
     @abstractmethod
