@@ -93,7 +93,7 @@ class AI:
         self._running = False
 
     def get_name(self):
-        return f"{self._player_id}_{self._path.split('/')[-1].split('.')[0]}" if self._enabled else f"{self._player_id}_disabled"
+        return f"{self._player_id}_{self._path.split('/')[-1].split('.')[0]}"
 
     def _read_logs(self):
         self._logs.append(self.log_appender.retrieve_logs())
