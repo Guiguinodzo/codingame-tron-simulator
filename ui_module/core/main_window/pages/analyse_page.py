@@ -3,8 +3,9 @@ from PySide6.QtGui import QFont, Qt
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSplitter
 
 from ui_module.core.main_window.pages.analyse_page_widgets.board_game_widget import BoardGameWidget
+from ui_module.core.main_window.pages.analyse_page_widgets.logs_widget import LogsWidget
 from ui_module.core.main_window.pages.analyse_page_widgets.players_settings_widget import PlayersSettingsWidget
-from ui_module.utils.world import absolute_path_str
+from ui_module.utils.world import absolute_path_str, World
 from ui_module.utils.qt.qt_utils import put_in_frame
 
 class AnalysePage(QWidget):
@@ -31,22 +32,18 @@ class AnalysePage(QWidget):
         h_layout.setContentsMargins(20, 20, 20, 20)
         h_layout.setSpacing(20)
 
-        label_2 = QLabel("Area 2")
-        label_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        font = QFont()
-        font.setPointSize(24)
-        font.setBold(True)
-        label_2.setFont(font)
-
         left_widget = QSplitter(Qt.Vertical)
 
         self.board_game_widget = BoardGameWidget()
 
+        self.logs_widget = LogsWidget()
+
+        World().simulator.finished.connect(self.logs_widget.fill_texts)
+
         bottom_widget = QWidget()
         bottom_layout = QHBoxLayout()
         bottom_layout.setContentsMargins(0, 0, 0, 0)
-        bottom_layout.addWidget(put_in_frame(label_2))
+        bottom_layout.addWidget(put_in_frame(self.logs_widget))
         bottom_widget.setLayout(bottom_layout)
 
         left_widget.addWidget(put_in_frame(self.board_game_widget))

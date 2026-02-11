@@ -2,14 +2,17 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QTextEdit
 from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor
 from PySide6.QtCore import Qt
 
+from ui_module.utils.world import World
 
-class PlayersLogWidget(QWidget):
+
+class LogsWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.tabs = QTabWidget(self)
         self.text_edits: list[QTextEdit] = []
         self.step_positions: dict[tuple[int, int], tuple[int, int]] = {}
+        self.world = World()
 
         for i in range(4):
             edit = QTextEdit()
@@ -26,17 +29,19 @@ class PlayersLogWidget(QWidget):
     def fill_texts(self):
         self.step_positions.clear()
 
-        total_steps = self.get_total_step_number()
+        total_steps = self.world.simulator.get_total_step_number()
 
         for player_id, edit in enumerate(self.text_edits):
             edit.clear()
             cursor = edit.textCursor()
 
             for step in range(total_steps):
-                text = self.get_player_stderr_at(step, player_id)
+                text = self.world.simulator.get_player_stderr_at(step, player_id)
 
                 if not text:
                     continue
+
+                text = "\n".join(text)
 
                 start = cursor.position()
                 block = f"[STEP {step}]\n{text}\n\n"
@@ -77,12 +82,3 @@ class PlayersLogWidget(QWidget):
             view_cursor.setPosition(start)
             edit.setTextCursor(view_cursor)
             edit.ensureCursorVisible()
-
-    # -----------------------------------------------------
-    # Ces méthodes existent déjà chez toi, ici juste pour type
-
-    def get_player_stderr_at(self, step: int, player_id: int) -> str:
-        raise NotImplementedError
-
-    def get_total_step_number(self) -> int:
-        raise NotImplementedError
