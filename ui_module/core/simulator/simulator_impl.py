@@ -28,7 +28,7 @@ class Simulator(SimulatorInterface):
             config["ais"].append(player_config)
             self._map_user(player.id, index)
 
-        self.simulation = Simulation(Config(config))
+        self.simulation = Simulation(Config(config), self._keep_log_files)
         self.simulation.start(lambda turn, _, _2 : self.advancement.emit(turn/9.5))
         self.finished.emit()
 

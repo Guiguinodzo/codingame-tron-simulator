@@ -18,7 +18,7 @@ class LogAppender:
         threading.Thread(target=self._read_logs, daemon=True).start()
 
     def _read_logs(self):
-        self._logger.log("Reading logs...")
+        self._logger.log("Start reading logs...")
         for line in iter(self._stderr.readline, ""):
             self._logs.put(line.rstrip())
         self._logger.log("Stopped reading logs")
@@ -40,13 +40,15 @@ class AI:
     _running: bool
     _logs: list[list[str]]
 
-    def __init__(self, player_id, path: str, initial_coords: tuple[int, int], log_directory: str, logger: Logger):
+    def __init__(self, player_id, path: str, initial_coords: tuple[int, int], log_directory: str | None, logger: Logger):
         self._player_id = player_id
         self._logger = logger
         self._path = path
         self._initial_coords = initial_coords
-        self._log_filename = f'{log_directory}/{self.get_name()}.log'
-        self._log_file = open(self._log_filename, 'wb')
+        if log_directory:
+            self._log_file = open(f'{log_directory}/{self.get_name()}.log', 'wb')
+        else:
+            self._log_file = None
 
         self._process = Popen(['python', path], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
         self._stdout = fdpexpect.fdspawn(self._process.stdout)
@@ -62,7 +64,7 @@ class AI:
             self._logger.log(f"Cannot write settings because AI {self._player_id} is not running")
             return
 
-        self._logger.log(f"Game settings input: {nb_players} {self._player_id}")
+        # self._logger.log(f"Game settings input: {nb_players} {self._player_id}")
         self._stdin.write(f"{nb_players} {self._player_id}\n")
         self._stdin.flush()
 
@@ -70,7 +72,7 @@ class AI:
         if not self._running:
             self._logger.log(f"Cannot write player info because AI {self._player_id} is not running")
             return
-        self._logger.log(f"Input for p={p} : {x0} {y0} {x1} {y1}")
+        # self._logger.log(f"Input for p={p} : {x0} {y0} {x1} {y1}")
         self._stdin.write(f"{x0} {y0} {x1} {y1}\n")
         self._stdin.flush()
 
@@ -90,7 +92,8 @@ class AI:
             return
         self._process.kill()
         self._process.wait()
-        self._log_file.close()
+        if self._log_file:
+            self._log_file.close()
         self._running = False
 
     def get_name(self):
@@ -100,6 +103,8 @@ class AI:
         self._logs.append(self._log_appender.retrieve_logs())
 
     def _write_logs(self, turn):
+        if not self._log_file:
+            return
         logs = self._logs[turn]
         self._log_file.write(f"=== Logs at turn {turn} ===\n".encode('utf-8'))
         self._log_file.write(os.linesep.join(logs).encode('utf-8'))
