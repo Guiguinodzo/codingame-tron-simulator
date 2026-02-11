@@ -41,7 +41,7 @@ class LogsWidget(QWidget):
                 if not text:
                     continue
 
-                text = "\n".join(text)
+                text = " ".join(text)
 
                 start = cursor.position()
                 block = f"[STEP {step}]\n{text}\n\n"
@@ -50,6 +50,8 @@ class LogsWidget(QWidget):
 
                 length = len(block)
                 self.step_positions[(player_id, step)] = (start, length)
+
+        print(self.world.simulator.get_player_stderr_at(3, 0))
 
     # -----------------------------------------------------
 
