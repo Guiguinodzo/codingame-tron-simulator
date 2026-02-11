@@ -84,6 +84,7 @@ class Simulation:
         turn = 950 # max turn is 950
         if progress_callback:
             progress_callback(turn, self.game.get_last_state().winner(), "win")
+        self.stop()
 
     def stop(self):
         for ai in self.ais:
