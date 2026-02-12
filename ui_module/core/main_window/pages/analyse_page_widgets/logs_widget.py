@@ -1,5 +1,6 @@
+from html import escape
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
-from PySide6.QtCore import Qt
 
 from ui_module.utils.world import World
 
@@ -137,7 +138,7 @@ class LogsWidget(QWidget):
                 margin:0;
                 white-space:pre-wrap;
                 font-size:13px;
-            ">{text}</pre>
+            ">{escape(text)}</pre>
 
         </div>
         """
