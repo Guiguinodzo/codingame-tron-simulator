@@ -1,5 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QTextEdit
-from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
 from PySide6.QtCore import Qt
 
 from ui_module.utils.world import World
@@ -9,89 +8,139 @@ class LogsWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.tabs = QTabWidget(self)
-        self.text_edits: list[QTextEdit] = []
-        self.step_positions: dict[tuple[int, int], tuple[int, int]] = {}
-        self.world = World()
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
 
-        for i in range(4):
-            edit = QTextEdit()
-            edit.setReadOnly(True)
+        self.text_edit.setStyleSheet("""
+        QTextEdit {
+            background: transparent;
+            border: 1px solid rgba(0, 246, 255, 120);
+            border-radius: 8px;
+            color: rgb(180, 255, 255);
+            font-family: Consolas, Courier, monospace;
+            font-size: 13px;
+            selection-background-color: rgba(0, 246, 255, 120);
+        }
 
-            self.text_edits.append(edit)
-            self.tabs.addTab(edit, f"Player {i+1}")
+        /* ========= TRON SCROLLBAR ========= */
+
+        QTextEdit QScrollBar:vertical {
+            background: qlineargradient(
+                x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(0,0,0,200),
+                stop:0.5 rgba(0,246,255,30),
+                stop:1 rgba(0,0,0,200)
+            );
+            width: 14px;
+            margin: 2px;
+            border-radius: 7px;
+            border: 1px solid rgba(0,246,255,120);
+        }
+
+        QTextEdit QScrollBar::handle:vertical {
+            background: qlineargradient(
+                x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(0,246,255,200),
+                stop:0.5 rgba(125,249,255,255),
+                stop:1 rgba(0,246,255,200)
+            );
+            min-height: 30px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,180);
+        }
+
+        QTextEdit QScrollBar::handle:vertical:hover {
+            background: qlineargradient(
+                x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(0,246,255,255),
+                stop:0.5 rgba(180,255,255,255),
+                stop:1 rgba(0,246,255,255)
+            );
+            border: 1px solid white;
+        }
+
+        QTextEdit QScrollBar::handle:vertical:pressed {
+            background: rgba(180,255,255,255);
+        }
+
+        QTextEdit QScrollBar::add-line:vertical,
+        QTextEdit QScrollBar::sub-line:vertical {
+            height: 0px;
+        }
+
+        QTextEdit QScrollBar::add-page:vertical,
+        QTextEdit QScrollBar::sub-page:vertical {
+            background: transparent;
+        }
+        """)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(self.tabs)
+        layout.addWidget(self.text_edit)
+
+        self.world = World()
+
+        # step -> (player_id, text)
+        self.logs_by_step: dict[int, tuple[int, str]] = {}
 
     # -----------------------------------------------------
 
     def fill_texts(self):
-        self.step_positions.clear()
+
+        self.logs_by_step.clear()
 
         total_steps = self.world.simulator.get_total_step_number()
 
-        for player_id, edit in enumerate(self.text_edits):
-            edit.clear()
-            cursor = edit.textCursor()
+        for step in range(total_steps):
+            for player_id in range(4):
 
-            for step in range(total_steps):
                 text = self.world.simulator.get_player_stderr_at(step, player_id)
 
                 if not text:
                     continue
 
-                text = " ".join(text)
+                text = "\n".join(text)
 
-                start = cursor.position()
-                block = f"[STEP {step}]\n{text}\n\n"
-
-                cursor.insertText(block)
-
-                length = len(block)
-                self.step_positions[(player_id, step)] = (start, length)
-
-        for i in range(4):
-            if self.step_positions.keys().__contains__((i, 1)):
-                print(f"i = {i}")
-                print(self.step_positions[i, 1])
+                self.logs_by_step[step] = (player_id, text)
+                break
 
     # -----------------------------------------------------
 
     def highlight_step(self, step: int):
-        highlight_format = QTextCharFormat()
-        highlight_format.setBackground(QColor(0, 246, 255, 80))
 
-        clear_format = QTextCharFormat()
-        clear_format.setBackground(Qt.transparent)
+        if step not in self.logs_by_step:
+            self.text_edit.clear()
+            return
 
-        first_tab_to_show = None
+        player_id, text = self.logs_by_step[step]
 
-        for player_id, edit in enumerate(self.text_edits):
-            cursor = edit.textCursor()
+        html = f"""
+        <div style="color:#9ff;">
 
-            # clear previous highlights
-            cursor.select(QTextCursor.SelectionType.Document)
-            cursor.setCharFormat(clear_format)
+            <div style="
+                font-size:18px;
+                letter-spacing:2px;
+                color:#00f6ff;
+                text-shadow: 0 0 6px #00f6ff;
+                margin-bottom:6px;
+            ">
+                PLAYER {player_id + 1}
+            </div>
 
-            key = (player_id, step)
-            if key not in self.step_positions:
-                continue
+            <hr style="
+                border:none;
+                height:1px;
+                background: linear-gradient(to right, transparent, #00f6ff, transparent);
+                margin-bottom:10px;
+            ">
 
-            start, length = self.step_positions[key]
+            <pre style="
+                margin:0;
+                white-space:pre-wrap;
+                font-size:13px;
+            ">{text}</pre>
 
-            cursor.setPosition(start)
-            cursor.setPosition(start + length, QTextCursor.MoveMode.KeepAnchor)
-            cursor.setCharFormat(highlight_format)
+        </div>
+        """
 
-            # scroll to position
-            view_cursor = edit.textCursor()
-            view_cursor.setPosition(start)
-            edit.setTextCursor(view_cursor)
-            edit.ensureCursorVisible()
+        self.text_edit.setHtml(html)
 
-            if first_tab_to_show is None:
-                first_tab_to_show = player_id
-
-        if first_tab_to_show is not None:
-            self.tabs.setCurrentIndex(first_tab_to_show)
