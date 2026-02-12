@@ -10,20 +10,10 @@ from simulator_module.config import Config
 from simulator_module.game.game import Game
 from simulator_module.util.logger import Logger
 
-from enum import Enum
-
 HEIGHT = 20
 WIDTH = 30
 
-class SimulationState(Enum):
-    INITIALIZED = 0
-    RUNNING = 1
-    COMPLETED = 2
-
-
 class Simulation:
-
-    _state: SimulationState = SimulationState.INITIALIZED
 
     def __init__(self, config: Config, keep_log_files, logger = None):
         self._config = config
@@ -51,12 +41,8 @@ class Simulation:
 
         self.game = Game(heads, self._logger)
 
-    def get_state(self) -> SimulationState:
-        return self._state
-
     def start(self, progress_callback: Callable[[int, int, str],None] = None):
         self._logger.log("Starting simulation")
-        self._state = SimulationState.RUNNING
         turn = 0
         if progress_callback:
             progress_callback(turn, -1, "start")
@@ -87,7 +73,6 @@ class Simulation:
                 if progress_callback:
                     progress_callback(turn, player, player_move)
 
-        self._state = SimulationState.COMPLETED
         turn = 950 # max turn is 950
         if progress_callback:
             progress_callback(turn, self.game.get_last_state().winner(), "win")

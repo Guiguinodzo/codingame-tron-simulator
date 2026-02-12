@@ -94,14 +94,15 @@ class Game:
     _initial_coords: list[tuple[int, int]]
     _states: list[GameState]
     _player_death_state_index: list[int]
-    _player_turn_by_steps = [(-1, -1)] # step 0 =  début de partie
-    _player_turn_counters = list[int]
+    _player_turn_by_steps: list[tuple[int, int]]
+    _player_turn_counters : list[int]
 
     def __init__(self, initial_coords: list[tuple[int, int]], logger: Logger):
         self.logger = logger
         self._nb_players = len(initial_coords)
         self._initial_coords = initial_coords
         self._player_death_state_index = [-1] * self._nb_players
+        self._player_turn_by_steps = [(-1, -1)]
         self._player_turn_counters = [-1] * self._nb_players
 
         grid = Grid(WIDTH, HEIGHT)
