@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import queue
 import threading
@@ -7,6 +8,7 @@ from typing import IO, AnyStr
 
 from pexpect import fdpexpect
 
+from simulator_module.game.player_turn import PlayerTurn
 from simulator_module.util.logger import Logger
 
 class LogAppender:
@@ -39,13 +41,17 @@ class AI:
     _initial_coords: tuple[int, int]
     _player_id: int
     _running: bool
+    _turn: int
+
     _logs: list[list[str]]
+
 
     def __init__(self, player_id, path: str, initial_coords: tuple[int, int], log_directory: str | None, logger: Logger):
         self._player_id = player_id
         self._logger = logger
         self._path = path
         self._initial_coords = initial_coords
+        self._turn = 0
         if log_directory:
             self._log_file = open(f'{log_directory}/{self.get_name()}.log', 'wb')
         else:
@@ -60,7 +66,7 @@ class AI:
 
         self._running = True
 
-    def ask(self, nb_players, players_infos: list[tuple[int,int,int,int]]) -> tuple[str, float]:
+    def ask(self, nb_players, players_infos: list[tuple[int,int,int,int]]) -> PlayerTurn:
         self._write_settings(nb_players)
         for player_id, player_info in enumerate(players_infos):
             self._write_player_info(player_id, player_info[0], player_info[1], player_info[2], player_info[3])
@@ -72,7 +78,9 @@ class AI:
         self._read_logs()
         self._write_logs(len(self._logs)-1)
 
-        return move, elapsed_time
+        player_turn = PlayerTurn(self._player_id, self._turn, move, elapsed_time)
+        self._turn += 1
+        return player_turn
 
     def stop(self):
         if not self._running:

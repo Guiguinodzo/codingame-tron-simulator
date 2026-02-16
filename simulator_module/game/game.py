@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import Self
 
 from simulator_module.game.grid import Grid
+from simulator_module.game.player_turn import PlayerTurn
 from simulator_module.util.logger import Logger
 
 HEIGHT = 20
@@ -12,7 +13,6 @@ MOVES = {
     "LEFT": (-1, 0),
     "RIGHT": (1, 0)
 }
-
 
 class GameState:
 
@@ -94,7 +94,7 @@ class Game:
     _initial_coords: list[tuple[int, int]]
     _states: list[GameState]
     _player_death_state_index: list[int]
-    _player_turn_by_steps: list[tuple[int, int]]
+    _player_turn_by_steps: list[PlayerTurn]
     _player_turn_counters : list[int]
 
     def __init__(self, initial_coords: list[tuple[int, int]], logger: Logger):
@@ -102,7 +102,7 @@ class Game:
         self._nb_players = len(initial_coords)
         self._initial_coords = initial_coords
         self._player_death_state_index = [-1] * self._nb_players
-        self._player_turn_by_steps = [(-1, -1)]
+        self._player_turn_by_steps = [PlayerTurn(-1, -1, 'INIT', 0)]
         self._player_turn_counters = [-1] * self._nb_players
 
         grid = Grid(WIDTH, HEIGHT)
@@ -132,17 +132,17 @@ class Game:
     def get_player_initial_coords(self, player):
         return self._initial_coords[player] if not self._states[-1].is_dead(player) else (-1, -1)
 
-    def move_player(self, player, move: str) -> GameState:
+    def move_player(self, player, player_turn: PlayerTurn) -> GameState:
         last_state = self._states[-1]
-        next_state = last_state.move_player(player, move)
+        next_state = last_state.move_player(player, player_turn.move)
         if not last_state.is_dead(player) and next_state.is_dead(player):
             self._player_death_state_index[player] = len(self._states)
         self._states.append(next_state)
         self._player_turn_counters[player] += 1
-        self._player_turn_by_steps.append((player, self._player_turn_counters[player]))
+        self._player_turn_by_steps.append(player_turn)
         return next_state
 
-    def get_player_and_turn_at_step(self, step) -> tuple[int,int] | None:
+    def get_player_turn_at_step(self, step) -> PlayerTurn | None:
         if not 0 <= step < len(self._player_turn_by_steps):
             return None
         return self._player_turn_by_steps[step]

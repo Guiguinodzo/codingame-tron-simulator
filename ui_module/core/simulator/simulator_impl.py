@@ -1,6 +1,7 @@
 from simulator_module.config import Config
 from simulator_module.simulator import Simulation
-from ui_module.core.simulator.simulator_interface import SimulatorInterface, OutputBoard, OutputPlayer, InputPlayer
+from ui_module.core.simulator.simulator_interface import SimulatorInterface, OutputBoard, OutputPlayer, InputPlayer, \
+    StepDetails
 
 
 class Simulator(SimulatorInterface):
@@ -48,6 +49,12 @@ class Simulator(SimulatorInterface):
             output_board.players.append(OutputPlayer(player_ui_id, head, trail))
 
         return output_board
+
+    def get_step_details(self, step: int) -> StepDetails:
+        player_turn = self.simulation.game.get_player_turn_at_step(step)
+        player_ui_id = self.simulator_to_ui_player_mapping.get(player_turn.player_id)
+        logs = self.simulation.get_logs_at(step, player_turn.player_id)
+        return StepDetails(step, player_turn.turn, player_ui_id, player_turn.duration, player_turn.move, logs)
 
     def get_player_stdout_at(self, step: int, player_id: int) -> str:
         return f"Not implemented yet: get_player_stdout_at({step}, {player_id})"

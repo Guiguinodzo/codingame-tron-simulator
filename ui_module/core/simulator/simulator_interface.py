@@ -21,6 +21,15 @@ class OutputPlayer:
 class OutputBoard:
     players: list[OutputPlayer] = field(default_factory=list)
 
+@dataclass
+class StepDetails:
+    step: int
+    turn: int
+    player_id: int
+    duration: float
+    move: str
+    logs: list[str]
+
 class MetaSimulatorInterface(type(QObject), type(ABC)):
     pass
 
@@ -76,6 +85,10 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
 
     @abstractmethod
     def get_player_death_step(self, player_id: int) -> int:
+        pass
+
+    @abstractmethod
+    def get_step_details(self, step: int) -> StepDetails:
         pass
 
     def start_simulation(self, players: list[InputPlayer], keep_logs):

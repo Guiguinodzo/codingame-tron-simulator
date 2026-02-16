@@ -43,9 +43,9 @@ class Simulation:
 
     def start(self, progress_callback: Callable[[int, int, str],None] = None):
         self._logger.log("Starting simulation")
-        turn = 0
+        step = 0
         if progress_callback:
-            progress_callback(turn, -1, "start")
+            progress_callback(step, -1, "start")
 
         while self.game.get_last_state().winner() == -1:
             for player in range(self.game.get_nb_players()):
@@ -54,9 +54,9 @@ class Simulation:
 
                 if self.game.get_last_state().is_dead(player):
                     self.ais[player].stop()
-                    turn +=1
+                    step +=1
                     if progress_callback:
-                        progress_callback(turn, player, "death")
+                        progress_callback(step, player, "death")
                     continue
 
                 players_info = []
@@ -65,17 +65,17 @@ class Simulation:
                     (x0, y0) = self.game.get_player_initial_coords(p)
                     players_info.append((x0, y0, x1, y1))
 
-                player_move, elapsed_time = self.ais[player].ask(self.game.get_nb_players(), players_info)
-                self._logger.log(f"Player move: {player_move} - Elasped time: {elapsed_time*1000:.3f}")
-                self.game.move_player(player, player_move)
+                player_turn = self.ais[player].ask(self.game.get_nb_players(), players_info)
+                self._logger.log(f"Player move: {player_turn.move} - Elapsed time: {player_turn.duration*1000:.3f}")
+                self.game.move_player(player, player_turn)
 
-                turn += 1
+                step += 1
                 if progress_callback:
-                    progress_callback(turn, player, player_move)
+                    progress_callback(step, player, player_turn.move)
 
-        turn = 950 # max turn is 950
+        step = 950 # max turn is 950
         if progress_callback:
-            progress_callback(turn, self.game.get_last_state().winner(), "win")
+            progress_callback(step, self.game.get_last_state().winner(), "win")
         self.stop()
 
     def stop(self):
@@ -88,10 +88,10 @@ class Simulation:
             state.print(self._logger)
 
     def get_logs_at(self, step, player_id):
-        player_of_turn, turn = self.game.get_player_and_turn_at_step(step)
-        if player_of_turn != player_id:
+        player_turn = self.game.get_player_turn_at_step(step)
+        if player_turn.player_id != player_id:
             return None
-        return self.ais[player_id].get_logs_at_turn(turn)
+        return self.ais[player_id].get_logs_at_turn(player_turn.turn)
 
 
 def progress_function(logger) -> Callable[[int, int, str],None]:
