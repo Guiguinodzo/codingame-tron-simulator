@@ -1,6 +1,7 @@
 import os
 import queue
 import threading
+import time
 from subprocess import Popen, PIPE
 from typing import IO, AnyStr
 
@@ -59,33 +60,19 @@ class AI:
 
         self._running = True
 
-    def write_settings(self, nb_players):
-        if not self._running:
-            self._logger.log(f"Cannot write settings because AI {self._player_id} is not running")
-            return
+    def ask(self, nb_players, players_infos: list[tuple[int,int,int,int]]) -> tuple[str, float]:
+        self._write_settings(nb_players)
+        for player_id, player_info in enumerate(players_infos):
+            self._write_player_info(player_id, player_info[0], player_info[1], player_info[2], player_info[3])
 
-        # self._logger.log(f"Game settings input: {nb_players} {self._player_id}")
-        self._stdin.write(f"{nb_players} {self._player_id}\n")
-        self._stdin.flush()
-
-    def write_player_info(self, p, x0, y0, x1, y1):
-        if not self._running:
-            self._logger.log(f"Cannot write player info because AI {self._player_id} is not running")
-            return
-        # self._logger.log(f"Input for p={p} : {x0} {y0} {x1} {y1}")
-        self._stdin.write(f"{x0} {y0} {x1} {y1}\n")
-        self._stdin.flush()
-
-    def read_move(self):
-        if not self._running:
-            self._logger.log(f"Cannot read move because AI {self._player_id} is not running, defaults to DOWN")
-            return 'DOWN'
-
-        moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
-        index = self._stdout.expect(moves, timeout=None)
+        before = time.time()
+        move = self._read_move()
+        after = time.time()
+        elapsed_time = after - before
         self._read_logs()
         self._write_logs(len(self._logs)-1)
-        return moves[index]
+
+        return move, elapsed_time
 
     def stop(self):
         if not self._running:
@@ -99,8 +86,38 @@ class AI:
     def get_name(self):
         return f"{self._player_id}_{self._path.split('/')[-1].split('.')[0]}"
 
+    def get_logs_at_turn(self, turn: int) -> list[str] | None:
+        if not 0 <= turn < len(self._logs):
+            return None
+        return self._logs[turn]
+
+    def _write_settings(self, nb_players):
+        if not self._running:
+            self._logger.log(f"Cannot write settings because AI {self._player_id} is not running")
+            return
+
+        self._stdin.write(f"{nb_players} {self._player_id}\n")
+        self._stdin.flush()
+
+    def _write_player_info(self, p, x0, y0, x1, y1):
+        if not self._running:
+            self._logger.log(f"Cannot write player info because AI {self._player_id} is not running")
+            return
+        self._stdin.write(f"{x0} {y0} {x1} {y1}\n")
+        self._stdin.flush()
+
+
+    def _read_move(self):
+        if not self._running:
+            self._logger.log(f"Cannot read move because AI {self._player_id} is not running, defaults to DOWN")
+            return 'DOWN'
+
+        moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+        index = self._stdout.expect(moves, timeout=None)
+        return moves[index]
+
     def _read_logs(self):
-        self._logs.append(self._log_appender.retrieve_logs())
+        self._logs.append(self._log_appender.retrieve_logs() + ['\n'])
 
     def _write_logs(self, turn):
         if not self._log_file:
@@ -109,8 +126,3 @@ class AI:
         self._log_file.write(f"=== Logs at turn {turn} ===\n".encode('utf-8'))
         self._log_file.write(os.linesep.join(logs).encode('utf-8'))
         self._log_file.flush()
-
-    def get_logs_at_turn(self, turn: int) -> list[str] | None:
-        if not 0 <= turn < len(self._logs):
-            return None
-        return self._logs[turn]

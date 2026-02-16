@@ -59,14 +59,14 @@ class Simulation:
                         progress_callback(turn, player, "death")
                     continue
 
-                self.ais[player].write_settings(self.game.get_nb_players())
-
+                players_info = []
                 for p in range(self.game.get_nb_players()):
                     (x1, y1) = self.game.get_last_state().get_head(p)
                     (x0, y0) = self.game.get_player_initial_coords(p)
-                    self.ais[player].write_player_info(p, x0, y0, x1, y1)
+                    players_info.append((x0, y0, x1, y1))
 
-                player_move = self.ais[player].read_move()
+                player_move, elapsed_time = self.ais[player].ask(self.game.get_nb_players(), players_info)
+                self._logger.log(f"Player move: {player_move} - Elasped time: {elapsed_time*1000:.3f}")
                 self.game.move_player(player, player_move)
 
                 turn += 1
