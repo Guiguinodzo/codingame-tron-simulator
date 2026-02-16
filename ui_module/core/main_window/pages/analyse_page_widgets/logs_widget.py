@@ -92,17 +92,11 @@ class LogsWidget(QWidget):
         total_steps = self.world.simulator.get_total_step_number()
 
         for step in range(total_steps):
-            for player_id in range(4):
-
-                text = self.world.simulator.get_player_stderr_at(step, player_id)
-
-                if not text:
-                    continue
-
-                text = "\n".join(text)
-
-                self.logs_by_step[step] = (player_id, text)
-                break
+            step_details = self.world.simulator.get_step_details(step)
+            if not step_details.logs:
+                continue
+            text = "\n".join(step_details.logs)
+            self.logs_by_step[step] = (step_details.player_id, text)
 
     # -----------------------------------------------------
 
@@ -113,6 +107,7 @@ class LogsWidget(QWidget):
             return
 
         player_id, text = self.logs_by_step[step]
+        step_details = self.world.simulator.get_step_details(step)
 
         html = f"""
         <div style="color:#9ff;">
@@ -124,7 +119,7 @@ class LogsWidget(QWidget):
                 text-shadow: 0 0 6px #00f6ff;
                 margin-bottom:6px;
             ">
-                PLAYER {player_id + 1}
+                PLAYER {player_id + 1} (decision time: {step_details.duration*1000:.3f} ms)
             </div>
 
             <hr style="
