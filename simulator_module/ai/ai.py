@@ -72,8 +72,14 @@ class AI:
             self._write_player_info(player_id, player_info[0], player_info[1], player_info[2], player_info[3])
 
         before = time.time()
-        move = self._read_move()
-        after = time.time()
+        try:
+            move = self._read_move()
+        except Exception as e:
+            self._logger.log(f"Error reading move, defaults to moving down: {e}")
+            move = 'DOWN'
+        finally:
+            after = time.time()
+
         elapsed_time = after - before
         self._read_logs()
         self._write_logs(len(self._logs)-1)
