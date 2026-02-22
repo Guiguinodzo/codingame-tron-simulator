@@ -379,7 +379,7 @@ class PlayersSettingsWidget(QWidget):
         self._enable_widgets()
 
     def on_player_load_clicked(self, player_index):
-        (filename, _) = QFileDialog.getOpenFileName(self, "Open experiment configuration", self.world.ui_settings.get_ai_last_path(), "(*.py)")
+        (filename, _) = QFileDialog.getOpenFileName(self, "Open experiment configuration", self.world.ui_settings.get_ai_last_path(), "(*.py *.java)")
         if filename:
             self.world.player_settings.set_ai_path(player_index, filename)
             self.world.ui_settings.set_ai_last_path(os.path.dirname(filename))

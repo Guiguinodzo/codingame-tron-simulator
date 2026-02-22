@@ -1,12 +1,9 @@
-from dataclasses import dataclass
 import os
 import queue
 import threading
 import time
 from subprocess import Popen, PIPE
 from typing import IO, AnyStr
-
-from pexpect import fdpexpect
 
 from simulator_module.game.player_turn import PlayerTurn
 from simulator_module.util.logger import Logger
@@ -35,8 +32,6 @@ class LogAppender:
 class AI:
     _path: str
     _process: Popen
-    _stdout: fdpexpect.fdspawn
-    _stdin: fdpexpect.fdspawn
 
     _initial_coords: tuple[int, int]
     _player_id: int
@@ -57,9 +52,7 @@ class AI:
         else:
             self._log_file = None
 
-        self._process = Popen(['python', path], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
-        self._stdout = fdpexpect.fdspawn(self._process.stdout)
-        self._stdin = fdpexpect.fdspawn(self._process.stdin)
+        self._process = Popen(self.path_to_program_call(path), stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
         self._logs = []
         self._log_appender = LogAppender(self._process.stderr, self._logger)
         self._log_appender.start()
@@ -69,7 +62,7 @@ class AI:
     def ask(self, nb_players, players_infos: list[tuple[int,int,int,int]]) -> PlayerTurn:
         self._write_settings(nb_players)
         for player_id, player_info in enumerate(players_infos):
-            self._write_player_info(player_id, player_info[0], player_info[1], player_info[2], player_info[3])
+            self._write_player_info(player_info[0], player_info[1], player_info[2], player_info[3])
 
         before = time.time()
         try:
@@ -105,33 +98,44 @@ class AI:
             return None
         return self._logs[turn]
 
+    def path_to_program_call(self, path:str) -> list[str]:
+        if path.endswith(".py"):
+            return ['python', path]
+        elif path.endswith(".java"):
+            return ['/var/home/guiguinodzo/.sdkman/candidates/java/current/bin/java', path]
+        else:
+            return [path]
+
     def _write_settings(self, nb_players):
         if not self._running:
             self._logger.log(f"Cannot write settings because AI {self._player_id} is not running")
             return
 
-        self._stdin.write(f"{nb_players} {self._player_id}\n")
-        self._stdin.flush()
+        self._write(f"{nb_players} {self._player_id}\n")
 
-    def _write_player_info(self, p, x0, y0, x1, y1):
+    def _write_player_info(self, x0, y0, x1, y1):
         if not self._running:
             self._logger.log(f"Cannot write player info because AI {self._player_id} is not running")
             return
-        self._stdin.write(f"{x0} {y0} {x1} {y1}\n")
-        self._stdin.flush()
-
+        self._write(f"{x0} {y0} {x1} {y1}\n")
 
     def _read_move(self):
         if not self._running:
             self._logger.log(f"Cannot read move because AI {self._player_id} is not running, defaults to DOWN")
             return 'DOWN'
 
-        moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
-        index = self._stdout.expect(moves, timeout=None)
-        return moves[index]
+        move = self._read()
+        return move if move in ['UP', 'DOWN', 'LEFT', 'RIGHT'] else 'DEATH'
 
     def _read_logs(self):
         self._logs.append(self._log_appender.retrieve_logs() + ['\n'])
+
+    def _read(self):
+        return self._process.stdout.readline().replace('\n', '')
+
+    def _write(self, line):
+        self._process.stdin.write(line)
+        self._process.stdin.flush()
 
     def _write_logs(self, turn):
         if not self._log_file:
