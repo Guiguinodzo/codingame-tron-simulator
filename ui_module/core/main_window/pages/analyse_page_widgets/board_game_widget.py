@@ -20,6 +20,9 @@ class GameWidget(QWidget):
 
         self.players_paths: list[list[tuple[int, int]]] = [[], [], [], []]
 
+        self.cells_to_paint: list[tuple[list[tuple[int, int]], str]] = []
+        self.text_to_write: list[tuple[tuple[int, int], str, str]] = []
+
         self.setMinimumSize(300, 200)
 
         self.players_settings = PlayersSettings()
@@ -36,7 +39,9 @@ class GameWidget(QWidget):
 
     # ---------------- API ----------------
 
-    def set_state(self, players_paths: list[list[tuple[int, int]]]):
+    def set_state(self, players_paths: list[list[tuple[int, int]]],
+                  cells_to_paint: list[tuple[list[tuple[int, int]], str]] | None = None,
+                  text_to_write: list[tuple[tuple[int, int], str, str]] | None = None):
         """
         players_paths = [
             [(x,y), ...],  # player 0
@@ -44,8 +49,22 @@ class GameWidget(QWidget):
             [(x,y), ...],  # player 2
             [(x,y), ...],  # player 3
         ]
+
+        cells_to_paint = [
+            ([(x,y), ...], "#RRGGBB"),
+            ...
+        ]
+
+        text_to_write = [
+            ((x,y), "Text", "#RRGGBB"),
+            ...
+        ]
         """
+
         self.players_paths = players_paths
+        self.cells_to_paint = cells_to_paint or []
+        self.text_to_write = text_to_write or []
+
         self.update()
 
     def clear(self):
@@ -94,6 +113,25 @@ class GameWidget(QWidget):
         # ---- background ----
         painter.fillRect(self.rect(), QColor(0, 0, 0, 220))
 
+        # ---- colored cells ----
+        for cells, color in self.cells_to_paint:
+
+            if isinstance(color, str):
+                color = QColor(color)
+
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(color))
+
+            for x, y in cells:
+                rect = QRectF(
+                    x * self.cell_w + offset_x,
+                    y * self.cell_h + offset_y,
+                    self.cell_w,
+                    self.cell_h
+                )
+
+                painter.drawRect(rect)
+
         # ---- grid ----
         grid_pen = QPen(QColor(0, 246, 255, 60))
         painter.setPen(grid_pen)
@@ -119,6 +157,29 @@ class GameWidget(QWidget):
                 prev_pos = path[i - 1] if i > 0 else None
                 next_pos = path[i + 1] if i < len(path) - 1 else None
                 self.draw_tron_cell(painter, x, y, offset_x, offset_y, prev_pos, next_pos)
+
+        # ---- text overlay ----
+
+        font = painter.font()
+        font.setBold(True)
+        font.setPointSizeF(min(self.cell_w, self.cell_h) * 0.45)
+        painter.setFont(font)
+
+        for (x, y), text, color in self.text_to_write:
+
+            if isinstance(color, str):
+                color = QColor(color)
+
+            painter.setPen(color)
+
+            rect = QRectF(
+                x * self.cell_w + offset_x,
+                y * self.cell_h + offset_y,
+                self.cell_w,
+                self.cell_h
+            )
+
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
 
         if self.loading:
             self.draw_loading_overlay(painter)
@@ -430,7 +491,7 @@ class BoardGameWidget(QWidget):
                         continue
                 if not found:
                     positions.append([])
-            self.game_widget.set_state(positions)
+            self.game_widget.set_state(positions, self.world.simulator.get_colored_cells_at(value), self.world.simulator.get_text_cells_at(value))
             self.state_changed.emit(self.current_step)
 
     def _enable_widgets(self):

@@ -72,6 +72,16 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
         pass
 
     @abstractmethod
+    def get_colored_cells_at(self, step: int) -> list[tuple[list[tuple[int, int]], str]] | None:
+        # return : ([(x0, y0), ... (xn, yn)], "#RRGGBB"], ...)
+        pass
+
+    @abstractmethod
+    def get_text_cells_at(self, step: int) -> list[tuple[tuple[int, int], str, str]] | None:
+        # return : ((x, y), "text", "#RRGGBB"], ...)
+        pass
+
+    @abstractmethod
     def get_player_stdout_at(self, step: int, player_id: int) -> str:
         pass
 
