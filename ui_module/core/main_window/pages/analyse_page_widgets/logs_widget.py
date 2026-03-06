@@ -109,6 +109,8 @@ class LogsWidget(QWidget):
         player_id, text = self.logs_by_step[step]
         step_details = self.world.simulator.get_step_details(step)
 
+        color_name = self.world.player_settings.get_color(player_id).name()
+
         html = f"""
         <div style="color:#9ff;">
 
@@ -119,7 +121,12 @@ class LogsWidget(QWidget):
                 text-shadow: 0 0 6px #00f6ff;
                 margin-bottom:6px;
             ">
-                PLAYER {player_id + 1} (decision time: {step_details.duration*1000:.3f} ms)
+                <span style="color:{color_name}; text-shadow:0 0 6px {color_name};">
+                    PLAYER {player_id + 1}
+                </span>
+                <span>
+                    (decision time: {step_details.duration*1000:.3f} ms)
+                </span>
             </div>
 
             <hr style="
