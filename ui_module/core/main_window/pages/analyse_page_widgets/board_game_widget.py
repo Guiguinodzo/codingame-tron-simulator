@@ -297,6 +297,7 @@ class BoardGameWidget(QWidget):
     def __init__(self):
         super().__init__()
 
+        self._group_id_overlay = None
         self.world = World()
 
         self.game_computed = False
@@ -480,19 +481,71 @@ class BoardGameWidget(QWidget):
         self.step_spin.setValue(value)
         self._enable_widgets()
         if self.game_computed:
-            board = self.world.simulator.get_board_at(value)
-            positions = []
-            for index in range(self.world.player_settings.PLAYER_COUNT):
-                found = False
-                for player in board.players:
-                    if player.id == index:
-                        positions.append(player.trail)
-                        found = True
-                        continue
-                if not found:
-                    positions.append([])
-            self.game_widget.set_state(positions, self.world.simulator.get_colored_cells_at(value), self.world.simulator.get_text_cells_at(value))
+            self._repaint_game_widget()
             self.state_changed.emit(self.current_step)
+
+    def _repaint_game_widget(self):
+        # ------------- fill positions -------------
+        board = self.world.simulator.get_board_at(self.current_step)
+        positions = []
+        for index in range(self.world.player_settings.PLAYER_COUNT):
+            found = False
+            for player in board.players:
+                if player.id == index:
+                    positions.append(player.trail)
+                    found = True
+                    continue
+            if not found:
+                positions.append([])
+        # ------------- fill colorization -------------
+        step_details = self.world.simulator.get_step_details(self.current_step)
+
+        cells_to_paint = []
+        text_to_write = []
+
+        group_ids = [None]
+        if self._group_id_overlay is not None:
+            group_ids.append(self._group_id_overlay)
+
+        for group_id in group_ids:
+
+            # dictionnaire temporaire pour regrouper les cellules par couleur
+            paint_dict: dict[str, list[tuple[int, int]]] = {}
+
+            for instruction_set in step_details.instructions:
+                if instruction_set.get_group_id() is group_id:
+
+                    for instruction in instruction_set.get_instructions():
+
+                        cell = instruction.get_cell()
+                        color = instruction.get_color()
+                        text = instruction.get_text()
+                        text_color = instruction.get_text_color()
+
+                        # Gestion des cellules à colorer
+                        if color is not None:
+                            if color not in paint_dict:
+                                paint_dict[color] = []
+                            paint_dict[color].append(cell)
+
+                        # Gestion du texte à écrire
+                        if text is not None:
+                            if text_color is not None:
+                                text_to_write.append((cell, text, text_color))
+                            else:
+                                text_to_write.append((cell, text, "#FFFFFF"))
+
+            # conversion du dict en format attendu
+            for color, cells in paint_dict.items():
+                cells_to_paint.append((cells, color))
+
+        self.game_widget.set_state(positions, cells_to_paint, text_to_write)
+
+    def set_group_id_overlay(self, group_id : str):
+        self._group_id_overlay = group_id
+        if len(self._group_id_overlay) == 0:
+            self._group_id_overlay = None
+        self._repaint_game_widget()
 
     def _enable_widgets(self):
         self.speed_spin.setEnabled(self.game_computed)

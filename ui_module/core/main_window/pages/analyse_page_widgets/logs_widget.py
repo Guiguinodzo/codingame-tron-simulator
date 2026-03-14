@@ -1,11 +1,14 @@
 from html import escape
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QHBoxLayout, QLabel, QComboBox
 
 from ui_module.utils.world import World
 
 
 class LogsWidget(QWidget):
+    group_id_changed = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -75,7 +78,22 @@ class LogsWidget(QWidget):
         }
         """)
 
+        self.hide_h_widget = QWidget()
+        h_layout = QHBoxLayout(self)
+        h_layout.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel("Overlay: ")
+        self.label.setStyleSheet("color:#7df9ff; font-size:14px;")
+        self.combo_box = QComboBox()
+        h_layout.addWidget(self.label)
+        h_layout.addWidget(self.combo_box)
+        h_layout.addStretch(1)
+        self.hide_h_widget.setLayout(h_layout)
+        self.hide_h_widget.setVisible(False)
+        self.activate_combo_box = True
+        self.combo_box.currentIndexChanged.connect(self._combo_box_changed)
+
         layout = QVBoxLayout(self)
+        layout.addWidget(self.hide_h_widget)
         layout.addWidget(self.text_edit)
 
         self.world = World()
@@ -100,6 +118,12 @@ class LogsWidget(QWidget):
 
     # -----------------------------------------------------
 
+    def _combo_box_changed(self, index):
+        if index == 0:
+            self.group_id_changed.emit(None)
+        else:
+            self.group_id_changed.emit(self.combo_box.currentText())
+
     def highlight_step(self, step: int):
 
         if step not in self.logs_by_step:
@@ -107,7 +131,21 @@ class LogsWidget(QWidget):
             return
 
         player_id, text = self.logs_by_step[step]
+
+        group_ids = ["Default"]
         step_details = self.world.simulator.get_step_details(step)
+        for instruction_set in step_details.instructions:
+            if instruction_set.get_group_id() is not None:
+                group_ids.append(instruction_set.get_group_id())
+
+        self.hide_h_widget.setVisible(len(group_ids) > 1)
+        if len(group_ids) > 1:
+            self.activate_combo_box = False
+            self.combo_box.clear()
+            for text in group_ids:
+                self.combo_box.addItem(text)
+            self.combo_box.setCurrentIndex(0)
+            self.activate_combo_box = True
 
         color_name = self.world.player_settings.get_color(player_id).name()
 

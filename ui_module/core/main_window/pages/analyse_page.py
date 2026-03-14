@@ -40,6 +40,8 @@ class AnalysePage(QWidget):
 
         self.board_game_widget.state_changed.connect(self.logs_widget.highlight_step)
 
+        self.logs_widget.group_id_changed.connect(self.board_game_widget.set_group_id_overlay)
+
         World().simulator.finished.connect(self.logs_widget.fill_texts)
 
         bottom_widget = QWidget()
