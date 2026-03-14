@@ -21,6 +21,10 @@ def parse_line(line) -> tuple[str, Instruction] | tuple[None,None]:
         return None, None
 
     cell_x, cell_y = int(match.group(2)), int(match.group(3))
+
+    if not 0 <= cell_x <= 30 or not 0 <= cell_y <= 20:
+        return None, None
+
     color = match.group(5)
     text = match.group(7)
     text_color = match.group(9)
