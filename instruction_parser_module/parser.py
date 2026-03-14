@@ -30,6 +30,8 @@ def parse_line(line) -> tuple[str, Instruction] | tuple[None,None]:
     return group, Instruction((cell_x, cell_y), color, text)
 
 def parse_logs(lines: list[str]) -> list[InstructionSet]:
+    if not lines:
+        return []
 
     instruction_sets_by_group : dict[str, InstructionSet] = {}
 
