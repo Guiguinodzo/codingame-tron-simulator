@@ -142,8 +142,8 @@ class LogsWidget(QWidget):
         if len(group_ids) > 1:
             self.activate_combo_box = False
             self.combo_box.clear()
-            for text in group_ids:
-                self.combo_box.addItem(text)
+            for group in group_ids:
+                self.combo_box.addItem(group)
             self.combo_box.setCurrentIndex(0)
             self.activate_combo_box = True
 

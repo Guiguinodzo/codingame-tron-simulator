@@ -513,10 +513,8 @@ class BoardGameWidget(QWidget):
             paint_dict: dict[str, list[tuple[int, int]]] = {}
 
             for instruction_set in step_details.instructions:
-                if instruction_set.get_group_id() is group_id:
-
+                if instruction_set.get_group_id() == group_id:
                     for instruction in instruction_set.get_instructions():
-
                         cell = instruction.get_cell()
                         color = instruction.get_color()
                         text = instruction.get_text()

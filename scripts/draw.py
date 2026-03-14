@@ -58,7 +58,7 @@ while True:
         countdown -= 1
 
     for smiley_index in range(10):
-        smiley(i, i, '#000000', '#ffeb3b', f'{smiley_index}', f'Smiley_{smiley_index}')
+        smiley(smiley_index, smiley_index, '#000000', '#ffeb3b', f'{smiley_index}', f'Smiley_{smiley_index}')
 
     print(move)
 
