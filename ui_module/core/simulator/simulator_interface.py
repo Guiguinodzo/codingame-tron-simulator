@@ -32,6 +32,7 @@ class StepDetails:
     duration: float
     move: str
     logs: list[str]
+    instructions: list[InstructionSet]
 
 class MetaSimulatorInterface(type(QObject), type(ABC)):
     pass
@@ -103,11 +104,6 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
     @abstractmethod
     def get_step_details(self, step: int) -> StepDetails:
         pass
-
-    @abstractmethod
-    def get_step_instructions(self, step: int) -> list[InstructionSet]:
-        pass
-
 
     def start_simulation(self, players: list[InputPlayer], keep_logs):
         self._keep_log_files = keep_logs
