@@ -10,7 +10,7 @@ class Instruction:
     _text: str | None
     """ Texte à écrire dans la cellule"""
 
-    def __init__(self, cell, color, text):
+    def __init__(self, cell: tuple[int, int], color: str, text: str):
         self._cell = cell
         self._color = color
         self._text = text
