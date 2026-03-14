@@ -6,9 +6,9 @@ from instruction_parser_module.parser import parse_line
 class Test(TestCase):
 
     def test_instruction_complete(self):
-        group, instruction = parse_line('#PAINT([0,1],color=#00FF00,text="foo bar baz",text_color=#0F0,group=foo-bar_baz)')
+        group, instruction = parse_line('#PAINT([23,12],color=#00FF00,text="foo bar baz",text_color=#0F0,group=foo-bar_baz)')
         self.assertEqual(group, 'foo-bar_baz')
-        self.assertEqual(instruction.get_cell(), (0, 1))
+        self.assertEqual(instruction.get_cell(), (23, 12))
         self.assertEqual(instruction.get_color(), '#00FF00')
         self.assertEqual(instruction.get_text(), 'foo bar baz')
         self.assertEqual(instruction.get_text_color(), '#0F0')

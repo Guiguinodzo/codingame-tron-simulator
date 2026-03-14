@@ -54,8 +54,9 @@ class Simulator(SimulatorInterface):
     def get_step_details(self, step: int) -> StepDetails:
         player_turn = self.simulation.game.get_player_turn_at_step(step)
         player_ui_id = self.simulator_to_ui_player_mapping.get(player_turn.player_id)
-        logs = self.simulation.get_logs_at(step, player_turn.player_id)
-        instructions = parser.parse_logs(logs)
+        raw_logs = self.simulation.get_logs_at(step, player_turn.player_id)
+        instructions = parser.parse_logs(raw_logs)
+        logs = parser.filter_logs(raw_logs)
         return StepDetails(step, player_turn.turn, player_ui_id, player_turn.duration, player_turn.move, logs, instructions)
 
 
