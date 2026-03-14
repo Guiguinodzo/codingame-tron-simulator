@@ -24,12 +24,16 @@ class Instruction:
     def get_text(self):
         return self._text
 
+    def __str__(self):
+        return f'cell={self.get_cell()},color={self.get_color()},text={self.get_text()}'
+
 class InstructionSet:
 
-    _group_id: str
+    _group_id: str | None
+    """ Group id de l'instruction : caractères alphanumériques, tiret (-) et underscore (_)"""
     _instructions: list[Instruction]
 
-    def __init__(self, group_id):
+    def __init__(self, group_id=None):
         self._group_id = group_id
         self._instructions = []
 
@@ -41,3 +45,6 @@ class InstructionSet:
 
     def get_instructions(self):
         return self._instructions
+
+    def __str__(self):
+        return f'group_id={self.get_group_id()},instructions={[str(instruction) for instruction in self.get_instructions()]}'

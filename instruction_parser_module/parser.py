@@ -6,8 +6,8 @@ from instruction_parser_module.instruction import InstructionSet
 INSTRUCTION_START="#PAINT"
 CELL_PATTERN="\\[(\\-?\\d+),(\\-?\\d)\\]"
 COLOR_PATTERN="color=(#[A-Fa-f0-9]{3,6})"
-TEXT_PATTERN='text=\\"([A-Za-z0-9 _\\-+*\\/\\\\#]+)\\"'
-GROUP_PATTERN='group=([A-Za-z0-9_\\\\-]+)'
+TEXT_PATTERN='text=\\"(.+)\\"'
+GROUP_PATTERN='group=([\\w_\\-]+)'
 INSTRUCTION_PATTERN=f"^{INSTRUCTION_START}\\(({CELL_PATTERN})(,{COLOR_PATTERN})?(,{TEXT_PATTERN})?(,{GROUP_PATTERN})?\\)$"
 
 def parse_line(line) -> tuple[str, Instruction] | tuple[None,None]:
