@@ -1,3 +1,4 @@
+from instruction_parser_module.instruction import InstructionSet
 from simulator_module.config import Config
 from simulator_module.simulator import Simulation
 from ui_module.core.simulator.simulator_interface import SimulatorInterface, OutputBoard, OutputPlayer, InputPlayer, \
@@ -55,6 +56,9 @@ class Simulator(SimulatorInterface):
         player_ui_id = self.simulator_to_ui_player_mapping.get(player_turn.player_id)
         logs = self.simulation.get_logs_at(step, player_turn.player_id)
         return StepDetails(step, player_turn.turn, player_ui_id, player_turn.duration, player_turn.move, logs)
+
+    def get_step_instructions(self, step: int) -> list[InstructionSet]:
+        return []
 
     def get_player_stdout_at(self, step: int, player_id: int) -> str:
         return f"Not implemented yet: get_player_stdout_at({step}, {player_id})"

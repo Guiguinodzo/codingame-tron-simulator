@@ -4,6 +4,9 @@ from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, QThread, Slot
 
+from instruction_parser_module.instruction import InstructionSet
+
+
 @dataclass
 class InputPlayer:
     id: int                         # 0 <= id < 4
@@ -100,6 +103,11 @@ class SimulatorInterface(QObject, ABC, metaclass=MetaSimulatorInterface):
     @abstractmethod
     def get_step_details(self, step: int) -> StepDetails:
         pass
+
+    @abstractmethod
+    def get_step_instructions(self, step: int) -> list[InstructionSet]:
+        pass
+
 
     def start_simulation(self, players: list[InputPlayer], keep_logs):
         self._keep_log_files = keep_logs
