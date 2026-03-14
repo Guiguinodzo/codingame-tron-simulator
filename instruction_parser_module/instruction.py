@@ -10,10 +10,14 @@ class Instruction:
     _text: str | None
     """ Texte à écrire dans la cellule"""
 
-    def __init__(self, cell: tuple[int, int], color: str, text: str):
+    _text_color: str | None
+    """ Couleur (#0AF ou #00AAFF) du texte à écrire dans la cellule"""
+
+    def __init__(self, cell: tuple[int, int], color: str, text: str, text_color: str):
         self._cell = cell
         self._color = color
         self._text = text
+        self._text_color = text_color
 
     def get_cell(self):
         return self._cell
@@ -24,8 +28,11 @@ class Instruction:
     def get_text(self):
         return self._text
 
+    def get_text_color(self):
+        return self._text_color
+
     def __str__(self):
-        return f'cell={self.get_cell()},color={self.get_color()},text={self.get_text()}'
+        return f'cell={self.get_cell()},color={self.get_color()},text={self.get_text()},text_color={self.get_text_color()}'
 
 class InstructionSet:
 
