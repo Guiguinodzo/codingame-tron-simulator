@@ -20,9 +20,12 @@ class Simulator(SimulatorInterface):
         self._step_details = []
 
     def _start_simulation(self, players: list[InputPlayer]):
-        self._running = True
+
         self.ui_to_simulator_player_mapping = {}
         self.simulator_to_ui_player_mapping = {}
+        self._running = True
+        self._step_details = []
+
         config = {
             "ais": []
         }
@@ -94,7 +97,8 @@ class Simulator(SimulatorInterface):
         if self._running:
             return []
         player_simulator_id = self.ui_to_simulator_player_mapping.get(player_id)
-        return self.simulation.get_logs_at(step, player_simulator_id)
+        step_details = self.get_step_details(step)
+        return step_details.logs if step_details.player_id == player_simulator_id else []
 
     def get_winner(self) -> int:    # return winner's player_id
         if self._running:
