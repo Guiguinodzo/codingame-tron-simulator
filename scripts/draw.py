@@ -5,7 +5,7 @@ def paint(x, y, color, text, group='default'):
     if color:
         command += f',color={color}'
     if text:
-        command += f',text="{text}"'
+        command += f',text="{text}",text_color=#FF00FF'
     if group:
         command += f',group={group}'
     command += ')'
@@ -57,8 +57,9 @@ while True:
     else:
         countdown -= 1
 
-    for smiley_index in range(10):
-        smiley(smiley_index, smiley_index, '#000000', '#ffeb3b', f'{smiley_index}', f'Smiley_{smiley_index}')
+    for smiley_index in range(100):
+        s_x, s_y = smiley_index % 10, smiley_index %10
+        smiley(s_x, s_y, '#000000', '#fe3', f'Je suis un super long texte pour le smiley avec le numéro {smiley_index}', f'Smiley_{smiley_index}')
 
     print(move)
 
