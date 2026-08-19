@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QStackedWidget
 
 from ui_module.core.main_window.pages.analyse_page import AnalysePage
 from ui_module.core.main_window.pages.arena_page import ArenaPage
-from ui_module.utils.qt.side_panel import SidePanel
+#from ui_module.utils.qt.side_panel import SidePanel
 
 
 class MainWindow(QMainWindow):
@@ -29,18 +29,18 @@ class MainWindow(QMainWindow):
         self.stacked.addWidget(self.analyse_page)
         self.stacked.addWidget(self.arena_page)
 
-        self.side_panel = SidePanel(self)
-        self.side_panel.setParent(self)
-
-        # Positionner à gauche
-        self.side_panel.move(0, 0)
-
-        # S’assurer qu’il se superpose
-        self.side_panel.raise_()
-
-        # Connexions des boutons du panel
-        self.side_panel.add_button("Analyse", slot=lambda: self.show_page(self.analyse_page), checked=True)
-        self.side_panel.add_button("Arena", slot=lambda: self.show_page(self.arena_page))
+        # self.side_panel = SidePanel(self)
+        # self.side_panel.setParent(self)
+        #
+        # # Positionner à gauche
+        # self.side_panel.move(0, 0)
+        #
+        # # S’assurer qu’il se superpose
+        # self.side_panel.raise_()
+        #
+        # # Connexions des boutons du panel
+        # self.side_panel.add_button("Analyse", slot=lambda: self.show_page(self.analyse_page), checked=True)
+        # self.side_panel.add_button("Arena", slot=lambda: self.show_page(self.arena_page))
 
     def show_page(self, page):
         self.stacked.setCurrentWidget(page)
